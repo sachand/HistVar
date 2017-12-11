@@ -17,12 +17,6 @@ ASSUME QuorumAssumption ==
           /\ Quorums \subseteq SUBSET Acceptors
           /\ \A Q1, Q2 \in Quorums : Q1 \cap Q2 # {}                 
 
-(***************************************************************************)
-(* The following lemma is an immediate consequence of the assumption.      *)
-(***************************************************************************)
-LEMMA QuorumNonEmpty == \A Q \in Quorums : Q # {}
-BY QuorumAssumption
-
 Ballots == Nat
 
 VARIABLES msgs,    \* The set of messages that have been sent.
@@ -37,9 +31,6 @@ vars == <<msgs, maxBal, maxVBal, maxVal>>
 Send(m) == msgs' = msgs \cup {m}
 
 None == CHOOSE v : v \notin Values
-
-LEMMA NoneNotAValue == None \notin Values
-BY NoSetContainsEverything DEF None
 
 Init == /\ msgs = {}
         /\ maxVBal = [a \in Acceptors |-> -1]
@@ -114,6 +105,15 @@ Next == \/ \E b \in Ballots : Phase1a(b) \/ Phase2a(b)
 
 Spec == Init /\ [][Next]_vars       
 -----------------------------------------------------------------------------
+(***************************************************************************)
+(* The following lemma is an immediate consequence of the assumption.      *)
+(***************************************************************************)
+LEMMA QuorumNonEmpty == \A Q \in Quorums : Q # {}
+BY QuorumAssumption
+
+LEMMA NoneNotAValue == None \notin Values
+BY NoSetContainsEverything DEF None
+
 (***************************************************************************)
 (* How a value is chosen:                                                  *)
 (*                                                                         *)
@@ -540,13 +540,13 @@ THEOREM Consistent == Spec => []Consistency
 -----------------------------------------------------------------------------
 (*chosenBar == {v \in Values : Chosen(v)}
 
-C == INSTANCE Consensus WITH chosen <- chosenBar
+C == INSTANCE Consensus WITH chosen <- chosenBar*)
 
 (***************************************************************************)
 (* The following theorem asserts that this specification of Paxos refines  *)
 (* the trivial specification of consensus in module Consensus.             *)
 (***************************************************************************)
-THEOREM Refinement == Spec => C!Spec
+(*THEOREM Refinement == Spec => C!Spec
 <1>1. Init => C!Init
   BY QuorumNonEmpty DEF Init, C!Init, chosenBar, Chosen, ChosenIn, VotedForIn
 
